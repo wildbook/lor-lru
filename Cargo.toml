@@ -1,0 +1,8 @@
+[package]
+name = "lor-lru"
+version = "0.1.0"
+authors = ["Wildbook"]
+edition = "2021"
+
+[dependencies]
+nohash-hasher = "0.2.0"
