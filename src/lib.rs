@@ -110,8 +110,9 @@ impl<K: Hash, S: BuildHasher> LruCache<K, S> {
     ///
     /// This counts as using the key.
     pub fn get_key(&mut self, slot: usize) -> Option<&K> {
-        self.items.get(slot).map(|key| {
-            assert!(self.queue.refresh(slot));
+        let queue = &mut self.queue;
+        self.items.get(slot).map(move |key| {
+            assert!(queue.refresh(slot));
             key
         })
     }
@@ -120,8 +121,9 @@ impl<K: Hash, S: BuildHasher> LruCache<K, S> {
     ///
     /// This counts as using the key.
     pub fn get_slot(&mut self, key: &K) -> Option<usize> {
-        self.dedup.get(&self.hash_builder.hash_one(key)).map(|&slot| {
-            assert!(self.queue.refresh(slot));
+        let queue = &mut self.queue;
+        self.dedup.get(&self.hash_builder.hash_one(key)).map(move |&slot| {
+            assert!(queue.refresh(slot));
             slot
         })
     }
@@ -225,12 +227,14 @@ impl<K: Hash, S: BuildHasher> LruCache<K, S> {
 
     /// Returns an iterator over the keys in the cache, in order of most to least recently used.
     pub fn iter_keys(&mut self) -> impl Iterator<Item = &K> {
-        self.queue.as_slice().iter().rev().map(|&i| &self.items[i])
+        let items = &self.items;
+        self.queue.as_slice().iter().rev().map(move |&i| &items[i])
     }
 
     /// Returns an iterator over the keys and their slots in the cache, in order of most to least recently used.
     pub fn iter_pairs(&mut self) -> impl Iterator<Item = (usize, &K)> {
-        self.queue.as_slice().iter().rev().map(|&i| (i, &self.items[i]))
+        let items = &self.items;
+        self.queue.as_slice().iter().rev().map(move |&i| (i, &items[i]))
     }
 }
 
